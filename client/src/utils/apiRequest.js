@@ -1,7 +1,7 @@
 import axios from "axios"
 
 const apiRequest = axios.create({
-    baseURL: "https://lamapin.onrender.com",
+    baseURL: "https://lamapin-1.onrender.com/api",
     withCredentials: true,
 });
 
