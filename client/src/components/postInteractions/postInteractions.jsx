@@ -1,4 +1,4 @@
-import Img from '../img/Img';
+import Img from '../img/img';
 import './postInteractions.css';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import apiRequest from '../../utils/apiRequest';
