@@ -22,12 +22,13 @@ const handleSubmit = async (e) =>{
 
   try{
      const res = await apiRequest.post(`/users/auth/${isRegister ? "register" : "login"}`,
-     data
+     data,
+     { withCredentials: true }
     );
     setCurrentUser(res.data);
     navigate("/")
   }catch(err){
-    setError(err.response.data.message)
+    setError(err.response?.data?.message || "something went wrong")
   }
 }
 
