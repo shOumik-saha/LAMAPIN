@@ -9,7 +9,7 @@ import cookieParser from "cookie-parser";
 import fileUpload from "express-fileupload";
 
 const app = express();
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 3000;
 
 app.use(express.json())
 app.use(cors({origin:process.env.CLIENT_URL, credentials: true }));
@@ -20,8 +20,12 @@ app.use("/users", userRouter)
 app.use("/pins", pinRouter)
 app.use("/comments", commentRouter)
 app.use("/boards", boardRouter)
+app.use("/api/users", userRouter)
+app.use("/api/pins", pinRouter)
+app.use("/api/comments", commentRouter)
+app.use("/api/boards", boardRouter)
  
-app.listen(3000, () => {
+app.listen(port, () => {
     connectDB();
-    console.log("server is running!");
+    console.log(`server is running on port ${port}!`);
 });

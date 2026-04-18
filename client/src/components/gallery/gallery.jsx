@@ -2,7 +2,7 @@ import GalleryItem from '../galleryItem/galleryItem'
 import './gallery.css'
 import {useInfiniteQuery} from "@tanstack/react-query"
 import InfiniteScroll from "react-infinite-scroll-component"
-import axios from "axios"
+import apiRequest from "../../utils/apiRequest"
 
 //TEMP
 //  const items= [
@@ -171,11 +171,14 @@ import axios from "axios"
 //  ];
 
 const fetchPins = async ({ pageParam,search,userId,boardId }) => {
-  const res = await axios.get(
-    `${import.meta.env.VITE_API_ENDPOINT}/pins?cursor=${pageParam}&search=${
-      search || ""
-    }&userId=${userId || ""}&boardId=${boardId || ""}`
-  );
+  const res = await apiRequest.get("/pins", {
+    params: {
+      cursor: pageParam,
+      search: search || "",
+      userId: userId || "",
+      boardId: boardId || "",
+    },
+  });
   return res.data
 }
 

@@ -5,6 +5,7 @@ import Save from "../models/save.model.js"
 import sharp from "sharp";
 import ImageKit from "imagekit";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 
 export const getPins = async (req,res) =>{
 
@@ -51,9 +52,9 @@ export const getPin = async (req,res)=>{
 export const createPin = async (req,res) =>{
     const { title, description, link, board, tags, textOptions, canvasOptions } = 
     req.body;
-    const media = req.files.media;
+    const media = req.files?.media;
 
-    if((!title, !description, !media)){
+    if(!title || !description || !media){
         return res.status(400).json({ message: "All fields are required." });
     }
 
@@ -68,14 +69,18 @@ export const createPin = async (req,res) =>{
     let width
     let height
 
-    if(canvasOptions.size === "original"){
-        clientAspectRatio =
-        parsedCanvasOptions.size.split(":")[0] /
-        parsedCanvasOptions.size.split(":")[1]; 
-    }else{
-        parsedCanvasOptions.orientation === originalOrientation
+    if (parsedCanvasOptions.size && parsedCanvasOptions.size !== "original") {
+        const [ratioWidth, ratioHeight] = parsedCanvasOptions.size.split(":").map(Number);
+        if (ratioWidth && ratioHeight) {
+            clientAspectRatio = ratioWidth / ratioHeight;
+        } else {
+            clientAspectRatio = originalAspectRatio;
+        }
+    } else {
+        const selectedOrientation = parsedCanvasOptions.orientation || originalOrientation;
+        selectedOrientation === originalOrientation
          ? (clientAspectRatio = originalAspectRatio)
-         : (clientAspectRatio = 1/originalAspectRatio);
+         : (clientAspectRatio = 1 / originalAspectRatio);
     }
 
     width = metadata.width;
@@ -89,17 +94,18 @@ export const createPin = async (req,res) =>{
 
 
     const textLeftPosition = Math.round((parsedTextOptions.left * width) / 375);
-    const textTopPosition = Math.round((parsedTextOptions.top * height) / parsedCanvasOptions.height);
+    const canvasHeight = parsedCanvasOptions.height || height;
+    const textTopPosition = Math.round((parsedTextOptions.top * height) / canvasHeight);
+    const backgroundColor = (parsedCanvasOptions.backgroundColor || "#ffffff").substring(1);
+    const textColor = (parsedTextOptions.color || "#000000").substring(1);
 
     const transformationString = `w-${width},h-${height}${
     originalAspectRatio > clientAspectRatio ? ",cm-pad_resize" : ""
-  },bg-${parsedCanvasOptions.backgroundColor.substring(1)}${
+  },bg-${backgroundColor}${
     parsedTextOptions.text
       ? `,l-text,i-${parsedTextOptions.text},fs-${
           parsedTextOptions.fontSize * 2.1
-        },lx-${textLeftPosition},ly-${textTopPosition},co-${parsedTextOptions.color.substring(
-          1
-        )},l-end`
+        },lx-${textLeftPosition},ly-${textTopPosition},co-${textColor},l-end`
       : ""
   }`;
 
@@ -116,8 +122,8 @@ export const createPin = async (req,res) =>{
             title,
             description,
             link: link || null,
-            board: board || null,
-            tags: tags ? tags.split(",").map(tag => tag.trim()) : [],
+            board: board && mongoose.Types.ObjectId.isValid(board) ? board : null,
+            tags: tags ? tags.split(",").map(tag => tag.trim()).filter(Boolean) : [],
             media:response.filePath,
             width: response.width,
             height: response.height,

@@ -6,6 +6,8 @@ const useAuthStore = create(persist((set) => ({
   setCurrentUser: (newUser) => set({ currentUser:newUser }),
   removeCurrentUser: () => set({ currentUser: null }),
   updateCurrentUser: (updatedUser) => set({ currentUser: updatedUser }),
-})));
+}),{
+  name: "auth-store",
+}));
 
 export default useAuthStore;
