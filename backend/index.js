@@ -11,10 +11,30 @@ import fileUpload from "express-fileupload";
 const app = express();
 const port = process.env.PORT || 3000;
 
+const allowedOrigins = (process.env.CLIENT_URL || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 app.use(express.json())
-app.use(cors({origin:process.env.CLIENT_URL, credentials: true }));
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error("CORS not allowed for this origin."), false);
+  },
+  credentials: true,
+}));
 app.use(cookieParser())
 app.use(fileUpload())
+
+app.get("/healthz", (req, res) => {
+  res.status(200).json({ ok: true });
+});
 
 app.use("/users", userRouter)
 app.use("/pins", pinRouter)
@@ -24,8 +44,17 @@ app.use("/api/users", userRouter)
 app.use("/api/pins", pinRouter)
 app.use("/api/comments", commentRouter)
 app.use("/api/boards", boardRouter)
- 
-app.listen(port, () => {
-    connectDB();
+
+const startServer = async () => {
+  try {
+    await connectDB();
+    app.listen(port, () => {
     console.log(`server is running on port ${port}!`);
-});
+    });
+  } catch (error) {
+    console.error("Failed to start server:", error.message);
+    process.exit(1);
+  }
+};
+
+startServer();

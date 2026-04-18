@@ -5,6 +5,7 @@ const apiBaseUrl = (import.meta.env.VITE_API_ENDPOINT || "http://localhost:3000"
 const apiRequest = axios.create({
     baseURL: apiBaseUrl,
     withCredentials: true,
+    timeout: 15000,
 });
 
 export default apiRequest

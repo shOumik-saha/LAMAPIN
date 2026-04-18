@@ -1,13 +1,14 @@
 import mongoose from "mongoose";
 
 const connectDB = async () => {
-    
-  try {
-    await mongoose.connect(process.env.MONGO);
-    console.log("MongoDB is connected!")
-  } catch (err) {
-    console.log("MONGODB CONNECTION ERROR", err);
+  if (!process.env.MONGO) {
+    throw new Error("MONGO environment variable is missing.");
   }
+
+  await mongoose.connect(process.env.MONGO, {
+    serverSelectionTimeoutMS: 10000,
+  });
+  console.log("MongoDB is connected!");
 };
 
 export default connectDB;

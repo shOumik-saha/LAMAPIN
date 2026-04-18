@@ -3,6 +3,15 @@ import Follow from "../models/follow.model.js"
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 
+const isProduction = process.env.NODE_ENV === "production";
+
+const authCookieOptions = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
+  maxAge: 30 * 24 * 60 * 60 * 1000,
+};
+
 //FOR REGISTRATION
 export const registerUser = async (req,res) =>{
 
@@ -22,11 +31,7 @@ const user = await User.create({
 
 const token = jwt.sign({userId:user._id}, process.env.JWT_SECRET)
 
-res.cookie("token", token, {
-    httpOnly:true,
-    secure:process.env.NODE_ENV === "production",
-    maxAge: 30 * 24 * 60 * 60 * 1000,
-});
+res.cookie("token", token, authCookieOptions);
 
     const {hashedPassword, ...detailsWithoutPassword} = user.toObject();
 
@@ -50,11 +55,7 @@ if(!isPasswordCorrect){
 }
 const token = jwt.sign({userId:user._id}, process.env.JWT_SECRET)
 
-res.cookie("token", token, {
-    httpOnly:true,
-    secure:process.env.NODE_ENV === "production",
-    maxAge: 30 * 24 * 60 * 60 * 1000,
-});
+res.cookie("token", token, authCookieOptions);
 const {hashedPassword, ...detailsWithoutPassword} = user.toObject();
 
     res.status(200).json(detailsWithoutPassword);
@@ -62,7 +63,11 @@ const {hashedPassword, ...detailsWithoutPassword} = user.toObject();
 
 // FOR LOGOUT
 export const logoutUser = async (req,res) =>{
-   res.clearCookie("token")
+   res.clearCookie("token", {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+   })
 
    res.status(200).json({message:"Logout Successful!"})
 };

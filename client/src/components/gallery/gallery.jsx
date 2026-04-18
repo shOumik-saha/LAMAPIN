@@ -184,7 +184,7 @@ const fetchPins = async ({ pageParam,search,userId,boardId }) => {
 
 const Gallery = ({ search, userId, boardId }) => {
 
-const { data,fetchNextPage,hasNextPage,status } = useInfiniteQuery({
+const { data,fetchNextPage,hasNextPage,status,error } = useInfiniteQuery({
    queryKey: ['pins',search,userId,boardId],
    queryFn: ({pageParam=0})=>fetchPins({pageParam,search,userId,boardId}),
    initialPageParam:0, 
@@ -192,7 +192,7 @@ const { data,fetchNextPage,hasNextPage,status } = useInfiniteQuery({
   });
 
 if(status === "pending") return "Loading..."
-if(status === "error") return "Something went wrong..."
+if(status === "error") return `Something went wrong: ${error?.message || "Unknown error"}`
 
 console.log(data)
 
